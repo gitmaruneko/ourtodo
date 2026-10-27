@@ -1,8 +1,8 @@
 # ourtodo
 
-手機優先、繁體中文的共用待辦網站。家人用 LINE 名稱登入，核准後一起管理任務與照片。
+手機優先、繁體中文的共用待辦網站。家人用 LINE 名稱登入，核准後一起管理任務。
 
-React / TypeScript · Cloudflare Workers / D1 / R2 · MIT
+React / TypeScript · Cloudflare Workers / D1 · MIT
 
 <!-- deploy-button:start -->
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fgitmaruneko%2Fourtodo)
@@ -10,10 +10,10 @@ React / TypeScript · Cloudflare Workers / D1 / R2 · MIT
 
 ## 可以做什麼
 
-- 新增與編輯任務名稱、有效日期、負責人、詳細說明、注意事項及照片。
+- 新增與編輯任務名稱、有效日期、負責人、詳細說明、注意事項。
 - 四種狀態：未處理、安排中、需協助、已完成。
 - 清單一行一筆；關鍵字、負責人、狀態與日曆日期篩選。
-- 每筆最多四張 JPEG / PNG / WebP，每張 2 MB。
+- 照片上傳暫時停用；部署不需要 R2。
 - 日期前後端驗證：2026/11/31 會被拒絕。
 - LINE 名稱自動帶入建立人；伺服器驗證身分並記錄帳號識別碼。
 - 管理員核准成員；未登入、等待核准或停用的帳號無法讀取任務或照片。
@@ -23,7 +23,7 @@ React / TypeScript · Cloudflare Workers / D1 / R2 · MIT
 
 ## 最快開始：部署到自己的 Cloudflare
 
-需要 Node.js 24 LTS（最低 22.13）、Cloudflare 帳號及 Git。照片儲存需要先在自己的 Cloudflare 帳號開通 R2。
+需要 Node.js 24 LTS（最低 22.13）、Cloudflare 帳號及 Git，不需要開通 R2。
 
 1. 下載或 clone 這個 repository，開啟專案資料夾。
 2. 安裝套件並登入 Cloudflare：
@@ -40,16 +40,9 @@ npm run setup
 npm run deploy
 ```
 
-setup 會詢問網站名稱、建立或重用同名 D1 資料庫，將個人設定寫入 Git 忽略的 wrangler.local.json。deploy 會建置、套用尚未執行的資料表更新、部署 Worker；Wrangler 會處理 R2 資源的建立確認。
+setup 會詢問網站名稱、建立或重用同名 D1 資料庫，將個人設定寫入 Git 忽略的 wrangler.local.json。deploy 會建置、套用尚未執行的資料表更新、部署 Worker。
 
-若暫時不開通 R2，可先部署僅使用任務文字的版本：
-
-```sh
-npm run setup -- --without-photos
-npm run deploy
-```
-
-這個模式不會建立 R2，介面會停用照片上傳。之後開通 R2，再執行不帶 --without-photos 的 setup 與 deploy 即可啟用。
+目前不提供照片上傳；介面已移除上傳欄位，後端也會拒絕檔案。
 
 **還沒有 LINE 設定？可以先留空。** 網站部署後只提供登入／設定入口，任務與照片保持封鎖。開啟部署網址的 /line-setup，完成 LINE 設定後再次執行 setup 和 deploy。
 
@@ -89,7 +82,7 @@ Cloudflare 網頁部署請使用：
 - Build command：npm run build
 - Deploy command：npm run deploy -- --skip-build
 
-Cloudflare 會依 wrangler.json 配置 D1 與 R2，部署指令會以 DB binding 套用 migration。LINE 設定可先留空，再到 Worker 的環境設定補上三項值並重新部署。確認 AUTH_MODE 維持 line；勿用命令列路徑覆蓋平台已配置的資源。
+Cloudflare 會依 wrangler.json 配置 D1，部署指令會以 DB binding 套用 migration。LINE 設定可先留空，再到 Worker 的環境設定補上三項值並重新部署。確認 AUTH_MODE 維持 line；勿用命令列路徑覆蓋平台已配置的資源。
 
 參考 [Cloudflare 官方部署按鈕說明](https://developers.cloudflare.com/workers/platform/deploy-buttons/)。
 
@@ -113,9 +106,9 @@ dry-run 不會登入、建立雲端資源或執行遠端 migration，只會檢�
 
 ## 資料與費用
 
-任務及成員存在部署者自己的 D1，照片存在自己的 R2。專案沒有代管服務，也不與原作者的資料庫連線。Cloudflare 的儲存、運算與讀寫費用依自己的帳號方案計算，請查閱 [R2 費率](https://developers.cloudflare.com/r2/pricing/) 與 [D1 費率](https://developers.cloudflare.com/d1/platform/pricing/)。
+任務及成員存在部署者自己的 D1。目前停用照片上傳，不會建立 R2。專案沒有代管服務，也不與原作者的資料庫連線。Cloudflare 的儲存、運算與讀寫費用依自己的帳號方案計算，請查閱 [D1 費率](https://developers.cloudflare.com/d1/platform/pricing/)。
 
-目前從任務移除照片只移除關聯，原檔可能仍保留在 R2。請自行規劃備份及資料清理。
+請自行規劃任務資料備份及清理；既有部署若留有舊照片，本次更新不會刪除歷史檔案。
 
 ## 目前範圍
 
