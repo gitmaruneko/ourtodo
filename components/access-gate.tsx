@@ -3,8 +3,8 @@ import {createContext,useContext,useEffect,useState,useCallback,useRef,type Reac
 import {CheckCheck,RefreshCw,ShieldCheck,LogOut,Users,ArrowLeft} from 'lucide-react';
 import {loadLineSDK,type LiffSDK} from '@/lib/line-client';
 type User={userId:string;displayName:string;provider:'line'|'platform';isAdmin:boolean;status:string};
-type Config={enabled:boolean;configured:boolean;liffId:string|null};
-type Auth={user:User;authFetch:(input:string,init?:RequestInit)=>Promise<Response>};
+type Config={enabled:boolean;configured:boolean;liffId:string|null;uploadsEnabled:boolean};
+type Auth={user:User;uploadsEnabled:boolean;authFetch:(input:string,init?:RequestInit)=>Promise<Response>};
 const Context=createContext<Auth|null>(null);
 export function useAuth(){const value=useContext(Context);if(!value)throw Error('缺少登入資訊');return value;}
 export function AccessGate({children}:{children:ReactNode}){
@@ -52,7 +52,7 @@ export function AccessGate({children}:{children:ReactNode}){
  <button className="secondary" onClick={()=>load()}><RefreshCw size={16}/>{user?'重新確認核准狀態':'重新載入'}</button>
  {user&&<button className="plain-button" onClick={logout}>離開此帳號</button>}
  <small className="access-footnote">只有獲准的成員能存取任務與照片。</small></section></div>;
- return <Context.Provider value={{user,authFetch}}><div className="identity-bar"><span><ShieldCheck size={15}/>{user.provider==='line'?user.displayName+' · LINE 已登入':'私人預覽 · LINE 尚未啟用'}</span><div>{user.isAdmin&&<a href="/members"><Users size={15}/>成員管理</a>}{user.provider==='platform'&&<a href="/line-setup">LINE 設定步驟</a>}{user.provider==='line'&&<button onClick={logout}><LogOut size={15}/>離開</button>}</div></div>{children}</Context.Provider>;
+ return <Context.Provider value={{user,authFetch,uploadsEnabled:Boolean(config?.uploadsEnabled)}}><div className="identity-bar"><span><ShieldCheck size={15}/>{user.provider==='line'?user.displayName+' · LINE 已登入':'私人預覽 · LINE 尚未啟用'}</span><div>{user.isAdmin&&<a href="/members"><Users size={15}/>成員管理</a>}{user.provider==='platform'&&<a href="/line-setup">LINE 設定步驟</a>}{user.provider==='line'&&<button onClick={logout}><LogOut size={15}/>離開</button>}</div></div>{children}</Context.Provider>;
 }
 export function AuthImage({photoId,alt}:{photoId:string;alt:string}){
  const {authFetch}=useAuth(),[src,setSrc]=useState(''),[failed,setFailed]=useState(false);

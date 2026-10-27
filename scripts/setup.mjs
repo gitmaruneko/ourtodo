@@ -4,6 +4,9 @@ import {readFileSync,writeFileSync,existsSync,mkdirSync} from 'node:fs';
 import {spawnSync} from 'node:child_process';
 import {resolve} from 'node:path';
 const local='wrangler.local.json';
+const flags=process.argv.slice(2);
+if(flags.some(f=>f!=='--without-photos'))throw Error('Supported option: --without-photos');
+const photosEnabled=!flags.includes('--without-photos');
 const config=JSON.parse(readFileSync(existsSync(local)?local:'wrangler.json','utf8'));
 const rl=createInterface({input:stdin,output:stdout});
 const ask=async(label,value='',privateValue=false)=>{
@@ -23,7 +26,7 @@ try{
  if(admin&&!/^U[a-f0-9]{32}$/.test(admin))throw Error('Your user ID 應為 U 加 32 位十六進位字元。');
  config.name=name;config.vars={AUTH_MODE:'line',LINE_CHANNEL_ID:channel,LINE_LIFF_ID:liff,LINE_ADMIN_USER_ID:admin};
  config.d1_databases=[{binding:'DB',database_name:name+'-db',migrations_dir:'drizzle'}];
- config.r2_buckets=[{binding:'BUCKET',bucket_name:name+'-photos'}];
+ config.r2_buckets=photosEnabled?[{binding:'BUCKET',bucket_name:name+'-photos'}]:[];
  mkdirSync('work',{recursive:true});
  const env={...process.env,WRANGLER_SEND_METRICS:'false',WRANGLER_LOG_PATH:resolve('work/wrangler.log')};
  function cf(args,capture=false){
@@ -39,7 +42,7 @@ try{
  config.d1_databases[0].database_id=found.uuid;
  writeFileSync(local,JSON.stringify(config,null,2)+'\n',{mode:0o600});
  console.log('已儲存到 wrangler.local.json（Git 會忽略）。');
- console.log('接著執行 npm run deploy。Wrangler 會確認／建立 R2 照片空間；帳號需先開通 R2。');
+ console.log(photosEnabled?'接著執行 npm run deploy。Wrangler 會確認／建立 R2 照片空間；帳號需先開通 R2。':'接著執行 npm run deploy。此部署不使用 R2，照片上傳會停用。');
  console.log('若三項 LINE 設定尚未齊全，網站只顯示設定入口，不會開放任務。');
 }finally{rl.close()}
 

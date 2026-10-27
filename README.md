@@ -42,6 +42,15 @@ npm run deploy
 
 setup 會詢問網站名稱、建立或重用同名 D1 資料庫，將個人設定寫入 Git 忽略的 wrangler.local.json。deploy 會建置、套用尚未執行的資料表更新、部署 Worker；Wrangler 會處理 R2 資源的建立確認。
 
+若暫時不開通 R2，可先部署僅使用任務文字的版本：
+
+```sh
+npm run setup -- --without-photos
+npm run deploy
+```
+
+這個模式不會建立 R2，介面會停用照片上傳。之後開通 R2，再執行不帶 --without-photos 的 setup 與 deploy 即可啟用。
+
 **還沒有 LINE 設定？可以先留空。** 網站部署後只提供登入／設定入口，任務與照片保持封鎖。開啟部署網址的 /line-setup，完成 LINE 設定後再次執行 setup 和 deploy。
 
 第一次部署會印出自己的 HTTPS 網址；之後不要更換 LINE channel 的 Provider，以免成員識別碼改變。

@@ -29,6 +29,7 @@ export async function POST(request:Request) {
  if(!Array.isArray(retained)||retained.some((p:any)=>typeof p!=='string'||!existing.some((e:any)=>e.id===p)))return json({error:'照片資料無效。'},400);
  const photos=existing.filter((p:any)=>retained.includes(p.id));
  const files=form.getAll('files').filter((f):f is File=>f instanceof File&&f.size>0);
+ if(files.length&&!env.BUCKET)return json({error:'照片儲存尚未開通，請先移除新增照片再儲存。'},400);
  if(photos.length+files.length>4||files.reduce((n,f)=>n+f.size,0)>8*1024*1024)return json({error:'最多 4 張照片，新增照片總計最多 8 MB。'},400);
  for(const f of files) {
  const a=new Uint8Array(await f.slice(0,12).arrayBuffer());

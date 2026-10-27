@@ -48,6 +48,14 @@ test('LINE membership protects real route handlers, task attribution and photos'
  const rows=await (await routes.task.GET(req('family.x.y'))).json();assert.equal(rows.length,1);assert.equal(rows[0].creator,'家人甲');assert.equal(rows[0].creator_user_id,family);
  const id=rows[0].photos[0].id;const photo=(token)=>routes.photo.GET(req(token),{params:Promise.resolve({id})});
  assert.equal((await photo('family.x.y')).status,200);assert.equal((await photo('unknown.x.y')).status,403);
+ const savedBucket=globalThis.__lineIntegrationEnv.BUCKET;delete globalThis.__lineIntegrationEnv.BUCKET;
+ assert.equal((await photo('family.x.y')).status,503);
+ const textOnly=new FormData();Object.entries({title:'不含照片的任務',date:'2026-11-30',assignee:'家人甲',status:'未處理',retained:'[]'}).forEach(([k,v])=>textOnly.set(k,v));
+ assert.equal((await routes.task.POST(req('family.x.y','/api/tasks','POST',textOnly))).status,200);
+ const noStorage=new FormData();Object.entries({title:'照片尚未開通',date:'2026-11-30',assignee:'家人甲',status:'未處理',retained:'[]'}).forEach(([k,v])=>noStorage.set(k,v));
+ noStorage.append('files',new File(['test'],'test.png',{type:'image/png'}));
+ const unavailable=await routes.task.POST(req('family.x.y','/api/tasks','POST',noStorage));assert.equal(unavailable.status,400);assert.match((await unavailable.json()).error,/照片儲存尚未開通/);
+ globalThis.__lineIntegrationEnv.BUCKET=savedBucket;
  assert.equal((await routes.members.POST(req('family.x.y','/api/members','POST',JSON.stringify({userId:unknown,status:'approved'})))).status,403);
  assert.equal((await routes.members.POST(req('admin.x.y','/api/members','POST',JSON.stringify({userId:admin,status:'blocked'})))).status,400);
  assert.equal((await routes.members.POST(req('admin.x.y','/api/members','POST',JSON.stringify({userId:family,status:'blocked'})))).status,200);
