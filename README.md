@@ -5,15 +5,33 @@
 React / TypeScript · Cloudflare Workers / D1 · MIT
 
 <!-- deploy-button:start -->
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fgitmaruneko%2Fourtodo)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fgitmaruneko%2Fourtodo%2Ftree%2Fmain)
 <!-- deploy-button:end -->
+
+## 選擇部署版本
+
+| 分支 | 功能 | Cloudflare 儲存需求 |
+| --- | --- | --- |
+| [main](https://github.com/gitmaruneko/ourtodo/tree/main) | 純文字任務；移除照片上傳介面，後端拒絕新增照片 | D1，不需 R2 |
+| [with-r2](https://github.com/gitmaruneko/ourtodo/tree/with-r2) | 任務與照片上傳，支援照片預覽 | D1 + R2，需先自行開通 R2 |
+
+目前閱讀的是 **main 純文字版本**。上方部署按鈕固定使用 main。
+
+手動下載時，明確選擇分支：
+
+```sh
+git clone --branch main https://github.com/gitmaruneko/ourtodo.git
+cd ourtodo
+```
+
+請使用各自的專案資料夾設定部署。若在同一資料夾切換分支，請重新執行 setup 與 build，避免沿用 Git 忽略的舊 wrangler.local.json 或建置結果。
 
 ## 可以做什麼
 
 - 新增與編輯任務名稱、有效日期、負責人、詳細說明、注意事項。
 - 四種狀態：未處理、安排中、需協助、已完成。
 - 清單一行一筆；關鍵字、負責人、狀態與日曆日期篩選。
-- 照片上傳暫時停用；部署不需要 R2。
+- 本分支不提供照片上傳；需要照片功能請選 with-r2。
 - 日期前後端驗證：2026/11/31 會被拒絕。
 - LINE 名稱自動帶入建立人；伺服器驗證身分並記錄帳號識別碼。
 - 管理員核准成員；未登入、等待核准或停用的帳號無法讀取任務或照片。
@@ -73,7 +91,7 @@ setup 會詢問網站名稱、建立或重用同名 D1 資料庫，將個人設�
 上傳後用真實 repository 網址產生部署按鈕：
 
 ```sh
-npm run add-deploy-button -- https://github.com/你的帳號/你的專案
+npm run add-deploy-button -- https://github.com/你的帳號/你的專案 --branch main
 ```
 
 指令會更新 README。提交變更後，其他人即可透過按鈕複製程式，部署到自己的 Cloudflare 帳號。按鈕不會分享原部署者的資料，也不會自動建立 LINE channel。
