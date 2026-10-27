@@ -1,0 +1,6 @@
+# For Cloudflare web deployment these values are configured as Worker secrets.
+# You can initially use pending, then replace them after creating your LIFF app.
+# Local CLI users should use npm run setup instead of copying this file.
+LINE_CHANNEL_ID=pending
+LINE_LIFF_ID=pending
+LINE_ADMIN_USER_ID=pending

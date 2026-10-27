@@ -1,0 +1,69 @@
+{
+  "name": "ourtodo",
+  "version": "0.2.0",
+  "private": true,
+  "license": "MIT",
+  "description": "ourtodo：支援 LINE 登入與家人成員核准的共用待辦網站",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "node scripts/manage.mjs dev",
+    "build": "node scripts/manage.mjs build",
+    "setup": "node scripts/setup.mjs",
+    "deploy": "node scripts/manage.mjs deploy",
+    "cf:login": "wrangler login",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "add-deploy-button": "node scripts/deploy-button.mjs"
+  },
+  "dependencies": {
+    "drizzle-orm": "0.45.2",
+    "lucide-react": "^1.31.0",
+    "next": "16.3.4",
+    "react": "19.2.6",
+    "react-dom": "19.2.6"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "1.37.1",
+    "@cloudflare/workers-types": "4.20260515.1",
+    "@types/node": "22.19.19",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.2",
+    "@vitejs/plugin-rsc": "0.5.26",
+    "drizzle-kit": "0.31.10",
+    "esbuild": "0.28.0",
+    "react-server-dom-webpack": "19.2.6",
+    "typescript": "5.9.3",
+    "vinext": "1.0.0-beta.5",
+    "vite": "8.0.13",
+    "wrangler": "4.92.0"
+  },
+  "overrides": {
+    "miniflare": {
+      "sharp": "0.35.4"
+    }
+  },
+  "cloudflare": {
+    "bindings": {
+      "DB": {
+        "description": "Stores tasks and family member approvals in your own D1 database."
+      },
+      "BUCKET": {
+        "description": "Stores task photos in your own R2 bucket."
+      },
+      "LINE_CHANNEL_ID": {
+        "description": "LINE Login channel ID from LINE Developers."
+      },
+      "LINE_LIFF_ID": {
+        "description": "LIFF ID from your LINE Login channel."
+      },
+      "LINE_ADMIN_USER_ID": {
+        "description": "Your user ID (U...) in the same LINE provider. This account is the administrator."
+      }
+    }
+  }
+}
