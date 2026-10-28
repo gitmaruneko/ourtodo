@@ -16,6 +16,10 @@ React / TypeScript · Cloudflare Workers / D1 · MIT
 
 <img src="docs/images/ourtodo-mobile.png" alt="ourtodo 手機版待辦清單" width="360">
 
+成員管理介面：
+
+![ourtodo 成員管理介面，名字旁顯示所屬群組](docs/images/ourtodo-members.png)
+
 ## 公開互動 Demo
 
 [前往 ourtodo Demo](https://gitmaruneko.github.io/ourtodo-demo/)。頁面頂端有 DEMO 標示，可隨時「重設示範資料」。
