@@ -17,7 +17,8 @@
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
-    "add-deploy-button": "node scripts/deploy-button.mjs"
+    "add-deploy-button": "node scripts/deploy-button.mjs",
+    "build:demo": "node scripts/build-demo.mjs"
   },
   "dependencies": {
     "drizzle-orm": "0.45.2",

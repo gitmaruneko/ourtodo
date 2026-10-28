@@ -4,6 +4,43 @@
 
 React / TypeScript · Cloudflare Workers / D1 · MIT
 
+**[開啟互動 Demo](https://gitmaruneko.github.io/ourtodo-demo/)** · 無須登入，可實際新增、編輯任務與切換日曆。Demo 任務與照片僅保存在自己的瀏覽器，不連接任何正式系統。
+
+## 操作畫面
+
+桌面版：
+
+![ourtodo 桌面版群組清單](docs/images/ourtodo-desktop.jpg)
+
+手機版（已遮除私人站網址）：
+
+<img src="docs/images/ourtodo-mobile.png" alt="ourtodo 手機版待辦清單" width="360">
+
+## 公開互動 Demo
+
+[前往 ourtodo Demo](https://gitmaruneko.github.io/ourtodo-demo/)。頁面頂端有 DEMO 標示，可隨時「重設示範資料」。
+
+| 功能 | Demo |
+| --- | --- |
+| 範例任務、新增及編輯、四種狀態 | 可操作 |
+| 我的任務、搜尋篩選、日曆 | 可操作 |
+| 群組切換、清單名稱與配色 | 可操作，全部是本機示範資料 |
+| 照片預覽 | 可操作；每張上限 700 KB，每項任務最多 3 張 |
+| 重新整理後保留測試資料 | 使用 localStorage；限同一瀏覽器及網站來源 |
+| 真實 LINE 登入、邀請、多人同步 | 不提供 |
+
+Demo 使用本專案的 `components/task-board.tsx`、樣式與狀態定義，將登入及儲存替換為 `demo/` 的本機實作。建置產物另行發布到 [`ourtodo-demo`](https://github.com/gitmaruneko/ourtodo-demo)，由 GitHub Pages 提供靜態檔案，不部署 Worker、不使用 D1、不包含 LINE 設定。內容安全政策 `connect-src 'none'` 會封鎖網路連線，建置也會拒絕網路及伺服器依賴。
+
+Demo 中請勿輸入敏感資料。換裝置、清除網站資料或部分隱私瀏覽模式可能讓資料消失；同一瀏覽器設定檔的其他使用者可能看得到這份本機資料。照片及任務不會上傳，與私人正式站完全分開。
+
+```sh
+npm ci
+npm run build:demo
+# 使用任意靜態 HTTP server 開啟 dist-demo/
+```
+
+建置及發布方式見 [Demo 架構與隔離驗證](docs/DEMO.md)。
+
 <!-- deploy-button:start -->
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fgitmaruneko%2Fourtodo%2Ftree%2Fmain)
 <!-- deploy-button:end -->

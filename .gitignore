@@ -31,3 +31,6 @@ backups/
 *.key
 *.p12
 *.pfx
+
+# Static local-only demo build
+dist-demo/
