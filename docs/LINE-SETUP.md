@@ -40,6 +40,8 @@ ID token 以 Authorization: Bearer 傳送到同源 API，再由伺服器送到 L
 
 ## 官方文件
 
+若登入權杖過期或遭撤銷，網站會清除失效狀態並顯示「重新使用 LINE 登入」。外部瀏覽器會先登出舊 LIFF session 再重新登入；LIFF 瀏覽器則重新開啟 LIFF 專用連結取得登入狀態，不使用外部瀏覽器專用的登入呼叫。重新登入會保留群組與邀請參數，不會攜帶舊 OAuth code 或 token。
+
 - [建立 channel](https://developers.line.biz/en/docs/liff/getting-started/)
 - [新增 LIFF app](https://developers.line.biz/en/docs/liff/registering-liff-apps/)
 - [安全使用 LINE 個人資料](https://developers.line.biz/en/docs/liff/using-user-profile/)
