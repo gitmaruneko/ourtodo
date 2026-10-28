@@ -38,9 +38,11 @@ ID token 以 Authorization: Bearer 傳送到同源 API，再由伺服器送到 L
 
 獨立部署預設強制 LINE 模式，不依賴 Sites 或 ChatGPT 登入。原始程式保留受信任託管平台的可選 adapter，但獨立部署工具拒絕啟用該模式；不應把外部傳入的平台身分標頭視為可信來源。
 
-## 官方文件
-
 若登入權杖過期或遭撤銷，網站會清除失效狀態並顯示「重新使用 LINE 登入」。外部瀏覽器會先登出舊 LIFF session 再重新登入；LIFF 瀏覽器則重新開啟 LIFF 專用連結取得登入狀態，不使用外部瀏覽器專用的登入呼叫。重新登入會保留群組與邀請參數，不會攜帶舊 OAuth code 或 token。
+
+群組管理複製的邀請使用 LIFF 專用網址，讓 LINE 第一次開啟時走 LIFF 初始化流程。舊的網站邀請網址仍可使用。登入頁會顯示目前步驟，讀取設定、SDK 載入、LINE 初始化及帳號確認都有逾時限制；不會無限停在確認畫面。若 LINE 初始化未完成，也可以直接重新開啟 LIFF 登入，保留原邀請資訊。
+
+## 官方文件
 
 - [建立 channel](https://developers.line.biz/en/docs/liff/getting-started/)
 - [新增 LIFF app](https://developers.line.biz/en/docs/liff/registering-liff-apps/)

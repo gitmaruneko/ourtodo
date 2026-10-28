@@ -4,11 +4,12 @@ import {Users,Plus,X,Copy,RefreshCw,CheckCheck,Check} from 'lucide-react';
 import {useAuth} from '@/components/access-gate';
 import TaskBoard from '@/components/task-board';
 import type {Group} from '@/lib/groups';
+import {lineAppUrl} from '@/lib/line-session';
 import {groupThemes,groupThemeStyle,type GroupTheme} from '@/lib/group-themes';
 type Member={userId:string;displayName:string;role:string;status:string};
 
 export default function GroupSpace(){
- const {user,authFetch}=useAuth();
+ const {user,authFetch,liffId}=useAuth();
  const [groups,setGroups]=useState<Group[]>([]),[groupId,setGroupId]=useState(''),[loading,setLoading]=useState(true),[error,setError]=useState('');
  const [name,setName]=useState(''),[invite,setInvite]=useState(''),[members,setMembers]=useState<Member[]>([]),[inviteCode,setInviteCode]=useState(''),[memberLoading,setMemberLoading]=useState(false),[memberError,setMemberError]=useState('');
  const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[dialogError,setDialogError]=useState('');
@@ -78,7 +79,7 @@ export default function GroupSpace(){
   try{const data=await perform('rotateInvite');setInviteCode(data.inviteCode);setMessage('已更新邀請連結，舊連結已失效。')}
   catch(e){setDialogError(e instanceof Error?e.message:'更新失敗。')}finally{setBusy(false)}
  }
- const link=inviteCode&&typeof window!=='undefined'?window.location.origin+'/?join='+inviteCode:'';
+ const link=inviteCode&&typeof window!=='undefined'?(liffId?lineAppUrl(liffId,window.location.origin+'/',inviteCode):window.location.origin+'/?join='+inviteCode):'';
  const tools=<div className="group-toolbar"><label><Users size={17}/><select aria-label="切換群組" value={groupId} onChange={e=>{setGroupId(e.target.value);remember(e.target.value)}}>{groups.map(g=><option value={g.id} key={g.id}>{g.name}</option>)}</select></label><button className="secondary" onClick={manage}><Users size={15}/>群組管理</button></div>;
  return <>
  {loading?<div className="group-welcome"><CheckCheck/><p>正在讀取群組…</p></div>:error?<div className="group-welcome"><p role="alert">{error}</p><button className="secondary" onClick={initialize}>重新載入</button></div>:active?<TaskBoard key={active.id} group={active} groupTools={tools} onRename={rename}/>:<div className="group-welcome"><span className="brand-icon"><CheckCheck/></span><h1>建立你的第一個群組</h1><p>每個群組各自保存任務與成員，加入後就能一起分工。</p><button className="primary" onClick={manage}><Plus size={18}/>建立或加入群組</button></div>}

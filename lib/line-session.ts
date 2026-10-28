@@ -1,5 +1,17 @@
 import type {LiffSDK} from './line-client';
 
+export function withLineTimeout<T>(operation:Promise<T>,message:string,timeoutMs=15000):Promise<T>{
+ return new Promise((resolve,reject)=>{
+  const timer=setTimeout(()=>reject(Error(message)),timeoutMs);
+  operation.then(value=>{clearTimeout(timer);resolve(value)},error=>{clearTimeout(timer);reject(error)});
+ });
+}
+
+export async function withLineRequestTimeout<T>(operation:(signal:AbortSignal)=>Promise<T>,message:string,timeoutMs=15000):Promise<T>{
+ const controller=new AbortController();
+ try{return await withLineTimeout(operation(controller.signal),message,timeoutMs)}finally{controller.abort()}
+}
+
 export function lineLoginRedirect(href:string,invitation=''){
  const current=new URL(href);
  let state:URL|undefined;
@@ -21,11 +33,15 @@ export function invalidateLineSession(sdk:LiffSDK){
 export function restartLineLogin(sdk:LiffSDK,options:{href:string;liffId:string;invitation?:string},navigate:(url:string)=>void){
  const redirect=lineLoginRedirect(options.href,options.invitation);
  if(sdk.isInClient()){
-  if(!/^\d+-[A-Za-z0-9]+$/.test(options.liffId))throw Error('LINE 登入設定無效，請聯絡管理員。');
-  const target=new URL(redirect);
-  navigate('https://liff.line.me/'+options.liffId+(target.pathname==='/'?'':target.pathname)+target.search);
+  navigate(lineAppUrl(options.liffId,options.href,options.invitation));
   return;
  }
  invalidateLineSession(sdk);
  sdk.login({redirectUri:redirect});
+}
+
+export function lineAppUrl(liffId:string,href:string,invitation=''){
+ if(!/^\d+-[A-Za-z0-9]+$/.test(liffId))throw Error('LINE 登入設定無效，請聯絡管理員。');
+ const target=new URL(lineLoginRedirect(href,invitation));
+ return 'https://liff.line.me/'+liffId+(target.pathname==='/'?'':target.pathname)+target.search;
 }
