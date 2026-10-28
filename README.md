@@ -12,6 +12,10 @@ React / TypeScript · Cloudflare Workers / D1 · MIT
 
 ![ourtodo 桌面版群組清單](docs/images/ourtodo-desktop.jpg)
 
+日曆檢視：
+
+![ourtodo 日曆檢視，依日期查看任務](docs/images/ourtodo-calendar.png)
+
 手機版：
 
 <img src="docs/images/ourtodo-mobile.png" alt="ourtodo 手機版待辦清單" width="360">
