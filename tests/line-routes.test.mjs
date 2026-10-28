@@ -9,6 +9,10 @@ test('LINE membership protects real route handlers, task attribution and photos'
  const db=new DatabaseSync(':memory:');
  db.exec(await readFile(new URL('../drizzle/0000_sad_true_believers.sql',import.meta.url),'utf8'));
  db.exec((await readFile(new URL('../drizzle/0001_past_kree.sql',import.meta.url),'utf8')).replaceAll('--> statement-breakpoint',''));
+ db.exec(await readFile(new URL('../drizzle/0002_user_preferences.sql',import.meta.url),'utf8'));
+ db.exec((await readFile(new URL('../drizzle/0003_groups.sql',import.meta.url),'utf8')).replaceAll('--> statement-breakpoint',''));
+ db.exec((await readFile(new URL('../drizzle/0004_group_themes.sql',import.meta.url),'utf8')).replaceAll('--> statement-breakpoint',''));
+ db.exec((await readFile(new URL('../drizzle/0005_group_join_requests.sql',import.meta.url),'utf8')).replaceAll('--> statement-breakpoint',''));
  const admin='U'+'a'.repeat(32),family='U'+'b'.repeat(32),unknown='U'+'c'.repeat(32);
  const bucket=new Map();
  globalThis.__lineIntegrationEnv={
@@ -16,10 +20,10 @@ test('LINE membership protects real route handlers, task attribution and photos'
  DB:{prepare(query){const statement=db.prepare(query);const wrap=(values=[])=>({
  bind:(...args)=>wrap(args),first:async()=>statement.get(...values)||null,
  all:async()=>({results:statement.all(...values)}),run:async()=>({meta:{changes:Number(statement.run(...values).changes)}})
- });return wrap();}},
+ });return wrap();},async batch(statements){db.exec('BEGIN');try{const results=[];for(const statement of statements)results.push(await statement.run());db.exec('COMMIT');return results}catch(e){db.exec('ROLLBACK');throw e}}},
  BUCKET:{async put(key,stream,options){bucket.set(key,{body:new Uint8Array(await new Response(stream).arrayBuffer()),httpMetadata:options.httpMetadata})},async get(key){return bucket.get(key)},async delete(key){bucket.delete(key)}}
  };
- const compiled=await build({stdin:{contents:"export * as config from './app/api/auth/config/route.ts';export * as task from './app/api/tasks/route.ts';export * as photo from './app/api/photos/[id]/route.ts';export * as me from './app/api/auth/me/route.ts';export * as members from './app/api/members/route.ts';",resolveDir:fileURLToPath(root)},bundle:true,write:false,platform:'node',format:'esm',plugins:[{name:'test-env',setup(b){b.onResolve({filter:/^cloudflare:workers$/},()=>({path:'env',namespace:'test'}));b.onLoad({filter:/.*/,namespace:'test'},()=>({contents:'export const env=globalThis.__lineIntegrationEnv;',loader:'js'}));}}]});
+ const compiled=await build({stdin:{contents:"export * as assignees from './app/api/members/assignees/route.ts';export * as preferences from './app/api/preferences/route.ts';export * as config from './app/api/auth/config/route.ts';export * as task from './app/api/tasks/route.ts';export * as photo from './app/api/photos/[id]/route.ts';export * as me from './app/api/auth/me/route.ts';export * as members from './app/api/members/route.ts';",resolveDir:fileURLToPath(root)},bundle:true,write:false,platform:'node',format:'esm',plugins:[{name:'test-env',setup(b){b.onResolve({filter:/^cloudflare:workers$/},()=>({path:'env',namespace:'test'}));b.onLoad({filter:/.*/,namespace:'test'},()=>({contents:'export const env=globalThis.__lineIntegrationEnv;',loader:'js'}));}}]});
  const routes=await import('data:text/javascript;base64,'+Buffer.from(compiled.outputFiles[0].text).toString('base64'));
  const originalFetch=globalThis.fetch;
  globalThis.fetch=async(url,init)=>{
@@ -34,16 +38,31 @@ test('LINE membership protects real route handlers, task attribution and photos'
  assert.equal((await routes.task.GET(req(''))).status,401);
  assert.equal((await routes.task.GET(req('forged.x.y'))).status,401);
  assert.equal((await routes.members.GET(req(''))).status,401);
+ assert.equal((await routes.assignees.GET(req(''))).status,401);
  assert.equal((await routes.photo.GET(req(''),{params:Promise.resolve({id:'00000000-0000-0000-0000-000000000000'})})).status,401);
  const owner=await (await routes.me.GET(req('admin.x.y'))).json();assert.equal(owner.isAdmin,true);assert.equal(owner.status,'approved');
+ await routes.task.GET(req('admin.x.y'));
  const pending=await (await routes.me.GET(req('family.x.y'))).json();assert.equal(pending.status,'pending');assert.equal(pending.isAdmin,false);
  const stranger=await (await routes.me.GET(req('unknown.x.y'))).json();assert.equal(stranger.isAdmin,false);
  assert.equal((await routes.task.GET(req('family.x.y'))).status,403);
  assert.equal((await routes.task.POST(req('family.x.y','/api/tasks','POST',new FormData()))).status,403);
  assert.equal((await routes.members.GET(req('family.x.y'))).status,403);
+ assert.equal((await routes.assignees.GET(req('family.x.y'))).status,403);
  const approve=()=>routes.members.POST(req('admin.x.y','/api/members','POST',JSON.stringify({userId:family,status:'approved'})));
- assert.equal((await approve()).status,200);assert.equal((await routes.task.GET(req('family.x.y'))).status,200);
- const form=new FormData();Object.entries({title:'家庭任務',date:'2026-11-30',assignee:'家人乙',status:'安排中',creator:'偽造名稱',retained:'[]'}).forEach(([k,v])=>form.set(k,v));
+ assert.equal((await approve()).status,200);db.prepare("INSERT INTO group_members (group_id,user_id,role,joined_at) VALUES ('legacy',?,'member',?)").run(family,new Date().toISOString());assert.equal((await routes.task.GET(req('family.x.y'))).status,200);
+ const names=await (await routes.assignees.GET(req('family.x.y'))).json();
+ assert.deepEqual(new Set(names),new Set(['管理員','家人甲']));assert.ok(names.every(n=>typeof n==='string'));
+ assert.equal((await routes.preferences.GET(req(''))).status,401);
+ assert.equal((await routes.preferences.PUT(req('unknown.x.y','/api/preferences','PUT',JSON.stringify({boardTitle:'無權修改'})))).status,403);
+ assert.equal((await (await routes.preferences.GET(req('family.x.y'))).json()).boardTitle,'我們的待辦清單');
+ for(const boardTitle of ['', '   ', 'a'.repeat(41), 123])assert.equal((await routes.preferences.PUT(req('family.x.y','/api/preferences','PUT',JSON.stringify({boardTitle})))).status,400);
+ assert.equal((await routes.preferences.PUT(req('family.x.y','/api/preferences','PUT','{'))).status,400);
+ assert.equal((await routes.preferences.PUT(req('family.x.y','/api/preferences','PUT',JSON.stringify({boardTitle:' 我的生活清單 ',userId:admin})))).status,200);
+ assert.equal((await (await routes.preferences.GET(req('family.x.y'))).json()).boardTitle,'我的生活清單');
+ assert.equal((await (await routes.preferences.GET(req('admin.x.y'))).json()).boardTitle,'我們的待辦清單');
+ assert.equal((await routes.preferences.PUT(req('family.x.y','/api/preferences','PUT',JSON.stringify({boardTitle:'新名稱'})))).status,200);
+ assert.equal((await (await routes.preferences.GET(req('family.x.y'))).json()).boardTitle,'新名稱');
+ const form=new FormData();Object.entries({title:'家庭任務',date:'2026-11-30',assignee:'家人甲',status:'安排中',creator:'偽造名稱',retained:'[]'}).forEach(([k,v])=>form.set(k,v));
  form.append('files',new File([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=','base64')],'test.png',{type:'image/png'}));
  const uploadRejected=await routes.task.POST(req('family.x.y','/api/tasks','POST',form));assert.equal(uploadRejected.status,400);assert.match((await uploadRejected.json()).error,/照片上傳功能已停用/);
  form.delete('files');
@@ -66,6 +85,8 @@ test('LINE membership protects real route handlers, task attribution and photos'
  assert.equal((await routes.members.POST(req('admin.x.y','/api/members','POST',JSON.stringify({userId:family,status:'blocked'})))).status,200);
  assert.equal((await routes.task.GET(req('family.x.y'))).status,403);assert.equal((await photo('family.x.y')).status,403);
  assert.equal((await routes.task.GET(req('admin.x.y'))).status,200);
+ assert.deepEqual(await (await routes.assignees.GET(req('admin.x.y'))).json(),['管理員']);
+ assert.equal((await routes.assignees.GET(req('family.x.y'))).status,403);
  const env=globalThis.__lineIntegrationEnv;env.LINE_LIFF_ID=undefined;
  assert.equal((await routes.task.GET(req('admin.x.y'))).status,503);
  env.LINE_LIFF_ID='12345-abc';env.AUTH_MODE=undefined;

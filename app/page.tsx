@@ -1,4 +1,4 @@
 import {AccessGate} from '@/components/access-gate';
-import TaskBoard from '@/components/task-board';
-export default function Home(){return <AccessGate><TaskBoard/></AccessGate>}
+import GroupSpace from '@/components/group-space';
+export default function Home(){return <AccessGate><GroupSpace/></AccessGate>}
 

@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {verifyLineToken,assertApproved,validMemberAction,AccessError} from '../lib/line-core.ts';
 const now=1800000000000,uid='U'+'a'.repeat(32),other='U'+'b'.repeat(32);
-const profile={iss:'https://access.line.me',aud:'12345',sub:uid,exp:now/1000+3600,name:'瓊瑋'};
+const profile={iss:'https://access.line.me',aud:'12345',sub:uid,exp:now/1000+3600,name:'測試使用者'};
 const ok=(body=profile)=>async()=>Response.json(body);
 const rejects=(promise,status)=>assert.rejects(promise,e=>e instanceof AccessError&&e.status===status);
 test('verify sends token only to official LINE verification endpoint',async()=>{
@@ -11,7 +11,7 @@ test('verify sends token only to official LINE verification endpoint',async()=>{
  assert.equal(url,'https://api.line.me/oauth2/v2.1/verify');assert.equal(init.method,'POST');
  assert.equal(init.body.get('id_token'),'one.two.three');assert.equal(init.body.get('client_id'),'12345');seen=true;return Response.json(profile);
  },now);
- assert.equal(seen,true);assert.equal(user.userId,uid);assert.equal(user.displayName,'瓊瑋');
+ assert.equal(seen,true);assert.equal(user.userId,uid);assert.equal(user.displayName,'測試使用者');
 });
 test('missing and malformed tokens are rejected without contacting LINE',async()=>{
  for(const token of ['', 'fake', 'a'.repeat(9000)])await rejects(verifyLineToken(token,'12345',()=>{throw Error('must not call')},now),401);

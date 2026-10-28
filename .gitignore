@@ -22,3 +22,12 @@ npm-debug.log*
 *.sqlite
 *.sqlite3
 *.db
+PERSONAL.md
+.aws/
+.agents/
+.codex/
+backups/
+*.log
+*.key
+*.p12
+*.pfx

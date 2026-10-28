@@ -1,0 +1,1 @@
+ALTER TABLE `app_groups` ADD `theme` text DEFAULT 'sage' NOT NULL;

@@ -15,6 +15,34 @@
       "when": 1793112023013,
       "tag": "0001_past_kree",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1793148219080,
+      "tag": "0002_user_preferences",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1793149535779,
+      "tag": "0003_groups",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1793150972987,
+      "tag": "0004_group_themes",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1793152365667,
+      "tag": "0005_group_join_requests",
+      "breakpoints": true
     }
   ]
 }

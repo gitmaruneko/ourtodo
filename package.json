@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "private": true,
   "license": "MIT",
-  "description": "ourtodo：支援 LINE 登入與家人成員核准的共用待辦網站",
+  "description": "ourtodo：支援 LINE 登入、群組隔離與邀請自動加入的共用待辦網站",
   "type": "module",
   "engines": {
     "node": ">=22.13.0"
